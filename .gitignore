@@ -1,0 +1,49 @@
+# Django & General Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+.Python
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+collected_static/
+
+# Environment & Dependencies
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+/timeout.log
+
+# PyCharm / JetBrains IDE
+.idea/
+*.iml
+*.iws
+out/
+.pytest_cache/
+
+# Celery & Redis (If used in DRF)
+celerybeat-schedule
+celerybeat.pid
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# OS specifics
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
