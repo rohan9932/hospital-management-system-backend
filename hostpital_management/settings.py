@@ -122,4 +122,4 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-AUTH_USER_MODEL = "api.HospitalUser"
+AUTH_USER_MODEL = "api.HospitalAppUser"

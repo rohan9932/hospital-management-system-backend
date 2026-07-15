@@ -1,15 +1,10 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django_softdelete.models import SoftDeleteModel
+from api.choices import RoleChoices, BloodGroupChoices
 
 # User Models
-class HospitalUser(SoftDeleteModel, AbstractUser):
-    class RoleChoices(models.TextChoices):
-        ADMIN = "admin"
-        DOCTOR = "doctor"
-        PATIENT = "patient"
-        RECEPTIONIST = "receptionist"
-
+class HospitalAppUser(SoftDeleteModel, AbstractUser):
     role = models.CharField(choices=RoleChoices.choices, max_length=15)
 
 
@@ -19,7 +14,7 @@ class Department(SoftDeleteModel):
 
 
 class Doctor(SoftDeleteModel):
-    user = models.OneToOneField(HospitalUser, related_name="doctor", on_delete=models.CASCADE)
+    user = models.OneToOneField(HospitalAppUser, related_name="doctor", on_delete=models.CASCADE)
     department = models.ForeignKey(Department, related_name='doctors', on_delete=models.SET_NULL, null=True)
     specialization = models.CharField(max_length=100)
     phone = models.CharField(max_length=15)
@@ -28,17 +23,7 @@ class Doctor(SoftDeleteModel):
 
 
 class Patient(SoftDeleteModel):
-    class BloodGroupChoices(models.TextChoices):
-        A_POSITIVE = "A+", "A+"
-        A_NEGATIVE = "A-", "A-"
-        B_POSITIVE = "B+", "B+"
-        B_NEGATIVE = "B-", "B-"
-        AB_POSITIVE = "AB+", "AB+"
-        AB_NEGATIVE = "AB-", "AB-"
-        O_POSITIVE = "O+", "O+"
-        O_NEGATIVE = "O-", "O-"
-
-    user = models.OneToOneField(HospitalUser, related_name="patient", on_delete=models.CASCADE)
+    user = models.OneToOneField(HospitalAppUser, related_name="patient", on_delete=models.CASCADE)
     age = models.PositiveIntegerField(default=0)
     gender = models.CharField(max_length=15)
     blood_group = models.CharField(max_length=3, choices=BloodGroupChoices.choices)
