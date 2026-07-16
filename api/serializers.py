@@ -1,16 +1,14 @@
-from django_softdelete.models import SoftDeleteModel
 from rest_framework import serializers
-from rest_framework.utils import representation
 
 from api.choices import RoleChoices, BloodGroupChoices
 from api.models import (
     HospitalAppUser, Patient, Department, Doctor,
-    Appointment, Medicine, Bill
+    Appointment, Medicine, Bill, PrescriptionMedicine, Prescription
 )
 from django.db import transaction
 
 
-class LoginSerializer(serializers.ModelSerializer):
+class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True, required=True)
     password = serializers.CharField(write_only=True, required=True)
 
@@ -18,7 +16,7 @@ class LoginSerializer(serializers.ModelSerializer):
 class PatientRegistrationSerializer(serializers.ModelSerializer):
     age = serializers.IntegerField(write_only=True, required=True)
     gender = serializers.CharField(max_length=15, write_only=True, required=True)
-    blood_group = serializers.ChoiceField(choices=BloodGroupChoices.choices)
+    blood_group = serializers.ChoiceField(choices=BloodGroupChoices.choices, write_only=True)
     address = serializers.CharField(style={'base_template': 'textarea.html'}, write_only=True, required=True)
     phone = serializers.CharField(max_length=15, write_only=True, required=True)
 
@@ -57,12 +55,15 @@ class PatientRegistrationSerializer(serializers.ModelSerializer):
             blood_group = validated_data.pop('blood_group')
             address = validated_data.pop('address')
             phone = validated_data.pop('phone')
+            password = validated_data.pop('password')
 
             # create user object
             user = HospitalAppUser.objects.create(
                 role = RoleChoices.PATIENT,
                 **validated_data
             )
+            user.set_password(password)
+            user.save()
 
             # create patient object
             Patient.objects.create(
@@ -78,7 +79,7 @@ class PatientRegistrationSerializer(serializers.ModelSerializer):
 
 
 # this only has Admin permission
-class HospitalAdminRegisterSerializer(serializers.ModelSerializer):
+class HospitalAdminRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = HospitalAppUser
         fields = [
@@ -107,17 +108,20 @@ class HospitalAdminRegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         with transaction.atomic():  # for rollback in case of error
             role = RoleChoices.ADMIN
+            password = validated_data.pop('password')
             # create user
             user = HospitalAppUser.objects.create_user(
                 role=role,
                 **validated_data
             )
+            user.set_password(password)
+            user.save()
 
         return user
 
 
 # this only has admin and hospitaladmin permission
-class ReceptionistRegisterSerializer(serializers.ModelSerializer):
+class ReceptionistRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = HospitalAppUser
         fields = [
@@ -146,16 +150,19 @@ class ReceptionistRegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         with transaction.atomic():  # for rollback in case of error
             role = RoleChoices.RECEPTIONIST
+            password = validated_data.pop('password')
             # create user
             user = HospitalAppUser.objects.create_user(
                 role=role,
                 **validated_data
             )
+            user.set_password(password)
+            user.save()
 
         return user
 
 
-class DoctorRegisterSerializer(serializers.ModelSerializer):
+class DoctorRegistrationSerializer(serializers.ModelSerializer):
     department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(), write_only=True)
     specialization = serializers.CharField(max_length=30,write_only=True)
     phone = serializers.CharField(max_length=20, write_only=True)
@@ -197,11 +204,14 @@ class DoctorRegisterSerializer(serializers.ModelSerializer):
             specialization = validated_data.pop('specialization')
             phone = validated_data.pop('phone')
             experience = validated_data.pop('experience')
+            password = validated_data.pop('password')
 
             user = HospitalAppUser.objects.create_user(
                 role=RoleChoices.DOCTOR,
                 **validated_data
             )
+            user.set_password(password)
+            user.save()
 
             Doctor.objects.create(
                 user=user,
@@ -262,6 +272,31 @@ class MedicineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medicine
         fields = ['id', 'name', 'description', 'unit']
+
+
+class PrescriptionMedicineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrescriptionMedicine
+        fields = ['medicine', 'dosage', 'duration']
+
+
+class PrescriptionSerializer(serializers.ModelSerializer):
+    # This reads the intermediate reverse relation
+    medicines = PrescriptionMedicineSerializer(many=True, source='prescriptionmedicine_set')
+
+    class Meta:
+        model = Prescription
+        fields = ['id', 'appointment', 'diagnosis', 'notes', 'medicines', 'created_at']
+
+    def create(self, validated_data):
+        # Handle the nesting using the generated source set
+        medicines_data = validated_data.pop('prescriptionmedicine_set')
+        with transaction.atomic():
+            prescription = Prescription.objects.create(**validated_data)
+            for med_data in medicines_data:
+                PrescriptionMedicine.objects.create(prescription=prescription, **med_data)
+        return prescription
+
 
 class BillSerializer(serializers.ModelSerializer):
     patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
