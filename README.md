@@ -107,8 +107,6 @@ The API leverages `django-filter` for advanced querying:
 
 ## 🔗 API Endpoints Overview
 
-> Update this table with your actual URL patterns — a quick-reference table like this is one of the first things reviewers look for.
-
 | Endpoint | Method | Description | Access |
 | :--- | :--- | :--- | :--- |
 | `/api/auth/register/patient/` | POST | Register a new patient (auto-creates Patient profile) | Public |
