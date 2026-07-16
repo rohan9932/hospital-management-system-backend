@@ -1,8 +1,9 @@
 from rest_framework import generics, request, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from api.serializers import LoginSerializer, DoctorSerializer, PatientSerializer
-from api.models import HospitalAppUser, Doctor, Patient
+from api.serializers import LoginSerializer, DoctorSerializer, PatientSerializer, AppointmentSerializer, \
+    MedicineSerializer, BillSerializer
+from api.models import HospitalAppUser, Doctor, Patient, Appointment, Medicine, Bill
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework import viewsets
@@ -53,6 +54,8 @@ class LoginAPIView(APIView):
 
 
 # Features View
+
+# ----- Doctor Views -------
 class DoctorListAPIView(generics.ListAPIView):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
@@ -65,6 +68,7 @@ class DoctorDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = DoctorSerializer
 
 
+# ------ Patient Views -----------
 class PatientListAPIView(generics.ListAPIView):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
@@ -72,3 +76,23 @@ class PatientListAPIView(generics.ListAPIView):
 class PatientDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
+
+
+# -------- Appointment Views ----------
+class AppointmentViewSet(viewsets.ModelViewSet):
+    queryset = Appointment.objects.all()
+    serializer_class = AppointmentSerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['doctor', 'patient', 'appointment_date']
+
+
+# -------- Medicine Views -----------
+class MedicineViewSet(viewsets.ModelViewSet):
+    queryset = Medicine.objects.all()
+    serializer_class = MedicineSerializer
+
+# -------- Bill Views ---------------
+class BillViewSet(viewsets.ModelViewSet):
+    queryset = Bill.objects.all()
+    serializer_class = BillSerializer

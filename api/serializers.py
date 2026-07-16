@@ -1,9 +1,11 @@
 from django_softdelete.models import SoftDeleteModel
 from rest_framework import serializers
+from rest_framework.utils import representation
 
 from api.choices import RoleChoices, BloodGroupChoices
 from api.models import (
-    HospitalAppUser, Patient, Department, Doctor
+    HospitalAppUser, Patient, Department, Doctor,
+    Appointment, Medicine, Bill
 )
 from django.db import transaction
 
@@ -213,6 +215,7 @@ class DoctorRegisterSerializer(serializers.ModelSerializer):
             return user
 
 
+# ------------------- User Serializers --------------------------
 class HospitalAppUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = HospitalAppUser
@@ -233,3 +236,36 @@ class PatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = ['id', 'user', 'age', 'gender', 'blood_group', 'address', 'phone']
+
+
+# ------------------- Features Serializers --------------------------
+class AppointmentSerializer(serializers.ModelSerializer):
+    patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
+    doctor = serializers.PrimaryKeyRelatedField(queryset=Doctor.objects.all())
+
+    class Meta:
+        model = Appointment
+        fields = ['id', 'patient', 'doctor', 'appointment_date', 'status', 'created_at']
+
+    def to_representation(self, instance):
+        # instance is the database record. this gives the actual response which weare gonna override for get
+        json_representation = super().to_representation(instance)
+
+        # passing patient object to the Patient serializer and getting the nested data for get
+        json_representation['patient'] = PatientSerializer(instance.patient).data
+        json_representation['doctor'] = DoctorSerializer(instance.doctor).data
+
+        return json_representation
+
+
+class MedicineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Medicine
+        fields = ['id', 'name', 'description', 'unit']
+
+class BillSerializer(serializers.ModelSerializer):
+    patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
+
+    class Meta:
+        model = Bill
+        fields = ['id', 'patient', 'amount', 'paid', 'created_at']
