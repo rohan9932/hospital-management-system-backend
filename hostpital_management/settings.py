@@ -40,6 +40,8 @@ INSTALLED_APPS = [
 
     # dependencies
     "rest_framework",
+    "rest_framework_simplejwt",
+    "django_filters",
 
     # apps
     "api"
@@ -123,3 +125,10 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 AUTH_USER_MODEL = "api.HospitalAppUser"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}

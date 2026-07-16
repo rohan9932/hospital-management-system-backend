@@ -1,12 +1,20 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django_softdelete.models import SoftDeleteModel
 from api.choices import RoleChoices, BloodGroupChoices
+
+# custom hybrid manager
+class HospitalAppUserManager(UserManager):
+    def get_queryset(self):
+        # Exclude soft-deleted users by default
+        return super().get_queryset().filter(deleted_at__isnull=True)
 
 # User Models
 class HospitalAppUser(SoftDeleteModel, AbstractUser):
     role = models.CharField(choices=RoleChoices.choices, max_length=15)
 
+    #Tell Django to use hybrid manager instead of SoftDeleteManager
+    objects = HospitalAppUserManager()
 
 class Department(SoftDeleteModel):
     name = models.CharField(max_length=100)
