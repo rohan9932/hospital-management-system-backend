@@ -110,7 +110,7 @@ class PatientDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_permissions(self):
         if self.request.method in ['POST', 'PUT', 'PATCH', 'DELETE']:
-            return [IsHospitalAdmin()]
+            return [(IsHospitalAdmin | IsReceptionist)()]
         return [IsAuthenticated()]
 
 
