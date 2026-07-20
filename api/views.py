@@ -1,6 +1,8 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from api.choices import RoleChoices
 from api.serializers import LoginSerializer, DoctorSerializer, PatientSerializer, AppointmentSerializer, \
     MedicineSerializer, BillSerializer, HospitalAdminRegistrationSerializer, PatientRegistrationSerializer, \
     ReceptionistRegistrationSerializer, DoctorRegistrationSerializer, PrescriptionSerializer
@@ -163,3 +165,12 @@ class BillViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [(IsHospitalAdmin | IsReceptionist)()]
         return [IsAuthenticated()]
+
+    def get_queryset(self):
+        base_queryset = super().get_queryset()
+        user = self.request.user
+
+        if user.is_staff or user.role == RoleChoices.ADMIN:
+            return base_queryset
+        else:
+            return base_queryset.filter(patient__user=user)
