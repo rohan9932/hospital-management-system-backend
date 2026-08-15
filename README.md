@@ -7,7 +7,7 @@ The database schema is strictly designed around the Entity-Relationship Diagram 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Django](https://img.shields.io/badge/Django-REST%20Framework-092E20)
 ![License](https://img.shields.io/badge/License-MIT-green)
-[![Live Demo](https://img.shields.io/badge/Live-Demo-success)]([https://your-live-url.com](https://hospital-management-system-backend-ps6p.onrender.com/))
+[![Live Demo](https://hospital-management-system-backend-ps6p.onrender.com/))
 
 ---
 
