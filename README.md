@@ -198,8 +198,7 @@ Create a `.env` file in the project root with the following keys:
 ```env
 SECRET_KEY=your-django-secret-key
 DEBUG=True
-DATABASE_URL=postgres://user:password@localhost:5432/hms_db
-ALLOWED_HOSTS=127.0.0.1,localhost
+DATABASE_URL=your-database-url
 ```
 
 ---
